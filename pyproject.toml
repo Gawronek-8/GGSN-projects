@@ -1,0 +1,19 @@
+[project]
+name = "ggsn-proj1"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.12"
+dependencies = [
+    "imblearn>=0.0",
+    "jupyterlab>=4.5.6",
+    "kagglehub>=1.0.0",
+    "matplotlib>=3.10.8",
+    "numpy>=2.3.5",
+    "pandas>=3.0.1",
+    "scikit-learn>=1.8.0",
+    "seaborn>=0.13.2",
+    "shap>=0.51.0",
+    "tensorflow>=2.21.0",
+    "torch>=2.10.0",
+    "torchvision>=0.25.0",
+]

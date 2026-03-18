@@ -1,0 +1,24 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="Eslint" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <list>
+          <option value="torch" />
+          <option value="transformers" />
+          <option value="peft" />
+          <option value="accelerate" />
+          <option value="bitsandbytes" />
+          <option value="safetensors" />
+          <option value="sentencepiece" />
+          <option value="datasets" />
+          <option value="trl" />
+          <option value="requests" />
+          <option value="polars" />
+          <option value="sentence-transformers" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>
