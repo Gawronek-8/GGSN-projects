@@ -2,31 +2,17 @@ import torch
 from torch.utils.data import DataLoader
 
 from dataset import BurnoutDataset, ModelHistory
-from model_factory import Model
 from tqdm import tqdm
 
 
-def train_model(model, batch_size, epochs, learning_rate, lr_decay, optimizer, criterion, device, metrics: dict = None):
-
-    optimizer = optimizer(model.parameters(), lr=learning_rate, weight_decay=lr_decay)
-    criterion = criterion()
-
-    train_data = DataLoader(BurnoutDataset("train"), batch_size=batch_size, shuffle=True)
-    val_data = DataLoader(BurnoutDataset("val"), batch_size=batch_size, shuffle=True)
-
-    if metrics is not None:
-        history = ModelHistory(**metrics)
-    else:
-        history = ModelHistory()
-
-    for epoch in range(epochs):
+def _train_one_epoch(model, train_data, device, criterion, optimizer, history = None):
 
         model.train()
-        pbar = tqdm(train_data)
 
-        running_loss = 0
         current_epoch_preds = []
         current_epoch_targets = []
+        epoch_loss = 0
+        pbar = tqdm(train_data)
 
         for batch in pbar:
             x, y = batch
@@ -41,20 +27,74 @@ def train_model(model, batch_size, epochs, learning_rate, lr_decay, optimizer, c
             optimizer.step()
             optimizer.zero_grad()
 
-            running_loss += loss.item()
+            epoch_loss += loss.item()
 
             predicted = torch.argmax(out, dim=1)
 
             current_epoch_preds.extend(predicted.detach().cpu().tolist())
             current_epoch_targets.extend(y.detach().cpu().tolist())
 
+        if history is None:
+            return
 
-        running_loss = running_loss / len(train_data)
-        history.add_loss(running_loss)
-        history.calculate_metrics(current_epoch_preds, current_epoch_targets)
+
+        epoch_loss = epoch_loss / len(train_data)
+        history.add_loss("train", epoch_loss)
+        history.calculate_metrics("train", current_epoch_targets, current_epoch_preds)
+
+
+def _val_one_epoch(model, val_data, device, criterion, history = None):
+    current_val_preds = []
+    current_val_targets = []
+    val_loss = 0
+
+    pbar = tqdm(val_data)
+
+    model.eval()
+
+    with torch.no_grad():
+        for batch in pbar:
+            x, y = batch
+            x, y = x.to(device).float(), y.to(device)
+
+            out = model(x)
+
+            loss = criterion(out, y)
+
+            val_loss += loss.item()
+
+            predicted = torch.argmax(out, dim=1)
+
+            current_val_preds.extend(predicted.detach().cpu().tolist())
+            current_val_targets.extend(y.detach().cpu().tolist())
+
+
+    if history is None:
+        return
+
+    val_loss = val_loss / len(val_data)
+    history.add_loss("val", val_loss)
+    history.calculate_metrics("val", current_val_targets, current_val_preds)
+
+
+
+def train_model(model, batch_size, epochs, learning_rate, lr_decay, optimizer, criterion, device, metrics: dict = None):
+
+    optimizer = optimizer(model.parameters(), lr=learning_rate, weight_decay=lr_decay)
+    criterion = criterion()
+
+    train_data = DataLoader(BurnoutDataset("train"), batch_size=batch_size, shuffle=True)
+    val_data = DataLoader(BurnoutDataset("val"), batch_size=batch_size, shuffle=True)
+
+    if metrics is not None:
+        history = ModelHistory(["train", "val"], **metrics)
+    else:
+        history = ModelHistory(["train", "val"])
+
+    for epoch in range(epochs):
+
+        _train_one_epoch(model, train_data, device, criterion, optimizer, history)
+        _val_one_epoch(model, val_data, device, criterion, history)
+
 
     return model, history
-
-
-
-
