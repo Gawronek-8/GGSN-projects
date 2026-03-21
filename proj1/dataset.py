@@ -29,9 +29,10 @@ class ModelHistory:
     """
 
     # TODO switch steps to 3 static names: training, val, test
-    def __init__(self, steps, **kwargs):
+    def __init__(self, steps, name , **kwargs):
         self.history = dict()
         self.metrics = dict()
+        self.name = name
 
         for step in steps:
             self.history[step] = {

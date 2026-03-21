@@ -62,15 +62,27 @@ class _SimpleBlock(nn.Module):
 
 class Model(nn.Module):
 
-    def __init__(self, neurons, dropouts, is_batchnorm, activations, is_skipping_conn, input_shape, output_shape):
+    def __init__(self, neurons : int, dropouts, is_batchnorm, activations, is_skipping_conn, input_shape, output_shape, name = "model_default_name"):
         super().__init__()
 
-        self.first_layer = _SimpleBlock(input_shape, neurons[0], activations[0], dropouts[0], is_batchnorm[0], is_skipping_conn[0])
+        self.train_info = None
+        self.first_layer = _SimpleBlock(input_shape, neurons, activations[0], dropouts[0], is_batchnorm[0], is_skipping_conn[0])
         self.hidden = nn.Sequential(
-            *[_SimpleBlock(neurons[i - 1], neurons[i], activations[i], dropouts[i], is_batchnorm[i], is_skipping_conn[i])
-              for i in range(1, len(neurons))],
+            *[_SimpleBlock(neurons // i , neurons // (i + 1), activations[i], dropouts[i], is_batchnorm[i], is_skipping_conn[i])
+              for i in range(1, len(activations))],
         )
-        self.output_layer = nn.Linear(neurons[-1], output_shape)
+        self.output_layer = nn.Linear(neurons // max(len(activations), 1), output_shape)
+        self.name = name
+        self.model_info = {"model": {
+            "neurons": neurons,
+            "dropouts": dropouts,
+            "is_batchnorm": is_batchnorm,
+            "activations": [act.__name__ if isinstance(act, type) else act.__class__.__name__ for act in activations ],
+            "is_skipping_conn": is_skipping_conn,
+            "input_shape": input_shape,
+            "output_shape": output_shape,
+            "name": self.name
+        }}
 
     def forward(self, x):
 
@@ -78,5 +90,9 @@ class Model(nn.Module):
         out = self.hidden(out)
         out = self.output_layer(out)
         return out
+
+    def add_training_info(self, train_info):
+        self.model_info["train"] = train_info
+
 
 

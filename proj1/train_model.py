@@ -87,14 +87,26 @@ def train_model(model, batch_size, epochs, learning_rate, lr_decay, optimizer, c
     val_data = DataLoader(BurnoutDataset("val"), batch_size=batch_size, shuffle=True)
 
     if metrics is not None:
-        history = ModelHistory(["train", "val"], **metrics)
+        history = ModelHistory(["train", "val"], model.name,  **metrics)
     else:
-        history = ModelHistory(["train", "val"])
+        history = ModelHistory(["train", "val"], model.name)
 
     for epoch in range(epochs):
 
         _train_one_epoch(model, train_data, device, criterion, optimizer, history)
         _val_one_epoch(model, val_data, device, criterion, history)
+
+
+    train_info = {
+        "epochs": epochs,
+        "optimizer" : optimizer.__class__.__name__,
+        "criterion" : criterion.__class__.__name__,
+        "batch_size" : batch_size,
+        "learning_rate" : learning_rate,
+        "lr_decay" : lr_decay,
+    }
+
+    model.add_training_info(train_info)
 
 
     return model, history
