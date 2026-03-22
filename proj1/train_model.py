@@ -81,7 +81,6 @@ def _val_one_epoch(model, val_data, device, criterion, history = None):
 def train_model(model, batch_size, epochs, learning_rate, lr_decay, optimizer, criterion, device, metrics: dict = None):
 
     optimizer = optimizer(model.parameters(), lr=learning_rate, weight_decay=lr_decay)
-    criterion = criterion()
 
     train_data = DataLoader(BurnoutDataset("train"), batch_size=batch_size, shuffle=True)
     val_data = DataLoader(BurnoutDataset("val"), batch_size=batch_size, shuffle=True)
