@@ -1,0 +1,162 @@
+[
+    {
+        "model": {
+            "neurons": 64,
+            "dropouts": [
+                0.2,
+                0.2,
+                0.2
+            ],
+            "is_batchnorm": [
+                false,
+                false,
+                true
+            ],
+            "activations": [
+                "SELU",
+                "SELU",
+                "GELU"
+            ],
+            "is_skipping_conn": [
+                true,
+                true,
+                false
+            ],
+            "input_shape": 37,
+            "output_shape": 6,
+            "name": "model_4"
+        },
+        "train": {
+            "epochs": 10,
+            "optimizer": "RMSprop",
+            "criterion": "CrossEntropyLoss",
+            "batch_size": 64,
+            "learning_rate": 0.01,
+            "lr_decay": 0.0001
+        }
+    },
+    {
+        "model": {
+            "neurons": 128,
+            "dropouts": [
+                0.2,
+                -1,
+                0.4
+            ],
+            "is_batchnorm": [
+                true,
+                false,
+                false
+            ],
+            "activations": [
+                "SELU",
+                "GELU",
+                "ReLU"
+            ],
+            "is_skipping_conn": [
+                true,
+                false,
+                true
+            ],
+            "input_shape": 37,
+            "output_shape": 6,
+            "name": "model_6"
+        },
+        "train": {
+            "epochs": 10,
+            "optimizer": "RMSprop",
+            "criterion": "CrossEntropyLoss",
+            "batch_size": 32,
+            "learning_rate": 0.01,
+            "lr_decay": 0.0001
+        }
+    },
+    {
+        "model": {
+            "neurons": 64,
+            "dropouts": [
+                0.4
+            ],
+            "is_batchnorm": [
+                false
+            ],
+            "activations": [
+                "Tanh"
+            ],
+            "is_skipping_conn": [
+                true
+            ],
+            "input_shape": 37,
+            "output_shape": 6,
+            "name": "model_7"
+        },
+        "train": {
+            "epochs": 10,
+            "optimizer": "RMSprop",
+            "criterion": "CrossEntropyLoss",
+            "batch_size": 64,
+            "learning_rate": 0.001,
+            "lr_decay": 1e-05
+        }
+    },
+    {
+        "model": {
+            "neurons": 128,
+            "dropouts": [
+                -1,
+                -1
+            ],
+            "is_batchnorm": [
+                true,
+                false
+            ],
+            "activations": [
+                "Tanh",
+                "GELU"
+            ],
+            "is_skipping_conn": [
+                false,
+                false
+            ],
+            "input_shape": 37,
+            "output_shape": 6,
+            "name": "model_12"
+        },
+        "train": {
+            "epochs": 10,
+            "optimizer": "RMSprop",
+            "criterion": "CrossEntropyLoss",
+            "batch_size": 32,
+            "learning_rate": 0.01,
+            "lr_decay": 1e-05
+        }
+    },
+    {
+        "model": {
+            "neurons": 32,
+            "dropouts": [
+                0.2
+            ],
+            "is_batchnorm": [
+                false
+            ],
+            "activations": [
+                "GELU"
+            ],
+            "is_skipping_conn": [
+                false
+            ],
+            "input_shape": 37,
+            "output_shape": 6,
+            "name": "model_14"
+        },
+        "train": {
+            "epochs": 10,
+            "optimizer": "Adam",
+            "criterion": "CrossEntropyLoss",
+            "batch_size": 32,
+            "learning_rate": 0.001,
+            "lr_decay": 0.0001
+        }
+    }
+]
