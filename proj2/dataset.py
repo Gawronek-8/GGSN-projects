@@ -1,12 +1,15 @@
 import os
 
 import cv2
+import torch
 from albumentations import BboxParams
 from matplotlib.transforms import Bbox
 from torch.utils.data import Dataset
 from torch import nn
 import albumentations as A
-from utils import yolo2yolo, yolo2matplotlib
+
+from proj2.utils import yolo2torch
+from utils import yolo2yolo, yolo2matplotlib, yolo2torch, bbox_area
 from extract_data import get_mappings
 
 from config import DATA_DIR
@@ -51,7 +54,7 @@ def _gather_labels(is_train):
 
 
 class FireDatasetForDetection(Dataset):
-    def __init__(self, train=True, transforms: list | None = None, bbox_params: A.BboxParams | None = None, target_resolution = (512, 512), bboxes_transform = yolo2yolo):
+    def __init__(self, train=True, transforms: list | None = None, bbox_params: A.BboxParams | None = None, target_resolution = (512, 512)):
 
         if bbox_params is None:
             bbox_params = A.BboxParams(format = 'yolo', label_fields=['labels'], min_visibility=0.2, clip=True, filter_invalid_bboxes=True)
@@ -62,11 +65,11 @@ class FireDatasetForDetection(Dataset):
         else:
             self.transforms = transforms
 
-        self.transforms = A.Compose([A.Resize(height=target_resolution[0], width=target_resolution[1])] + transforms, bbox_params=bbox_params, seed=42)
+        self.target_res = target_resolution
+        self.transforms = A.Compose([A.Resize(height=self.target_res[0], width=self.target_res[1])] + transforms, bbox_params=bbox_params, seed=42)
 
         self.data = _gather_labels(train)
         self.imgs_path = DATA_DIR / "train" / "images" if train else DATA_DIR / "test"
-        self.bboxes_transform = bboxes_transform
         self.file_mappings = get_mappings(train)
 
 
@@ -78,22 +81,23 @@ class FireDatasetForDetection(Dataset):
         datapoint_dict = self.data[idx]
         filename, labels, bboxes = datapoint_dict.values()
         image = cv2.imread(self.imgs_path / self.file_mappings[filename])
-        bboxes = self.bboxes_transform(bboxes, image.shape[:2])
 
-        tranform_dict = self.transforms(image=image, labels=labels, bboxes=bboxes)
+        transform_dict = self.transforms(image=image, labels=labels, bboxes=bboxes)
 
-        transformed_img = tranform_dict["image"]
-        transformed_labels = tranform_dict["labels"]
-        transformed_bboxes = tranform_dict["bboxes"]
+        transformed_img = transform_dict["image"]
+        transformed_labels = transform_dict["labels"]
+        transformed_bboxes = transform_dict["bboxes"]
 
-        return {}
+        transformed_bboxes = yolo2torch(transformed_bboxes, self.target_res)
+        bboxes_areas = bbox_area(transformed_bboxes)
+        transformed_labels = torch.tensor([label + 1 for label in transformed_labels], dtype=torch.int8)
 
-
-
-
-
-
-
-
-
+        return {
+            "image" : transformed_img,
+            "boxes" : transformed_bboxes,
+            "labels" : transformed_labels,
+            "image_id" : filename,
+            "area" : bboxes_areas,
+            "iscrowd" : torch.zeros(len(transformed_labels), dtype=torch.uint8)
+        }
 
