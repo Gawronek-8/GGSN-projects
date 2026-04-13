@@ -34,3 +34,4 @@ ipython_config.py
 htmlcov/
 .mypy_cache/
 data/
+*.pt
